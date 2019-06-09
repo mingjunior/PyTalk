@@ -4,7 +4,7 @@ from tkinter import messagebox
 
 window = tk.Tk()
 window.title('PyTalk')
-window.iconbitmap('image/logo.ico')
+# window.iconbitmap('image/logo.ico')
 window.geometry('400x300')
 window.resizable(0, 0)
 

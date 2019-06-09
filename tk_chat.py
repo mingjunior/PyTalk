@@ -61,6 +61,7 @@ class App:
 									cursor='hand2',
 									width=10,
 									font=('Arial', 16, 'bold'),
+
 									activeforeground='red',
 									command=self.set)
 		self.btn_setting.pack(side='left', fill='y')
