@@ -33,6 +33,9 @@ class PyTalkServer:
 		"""启动服务"""
 		self.sockfd.listen(5)
 		print("Listen the port %d ..." % self.port)
+
+		# 如何处理僵尸进程
+
 		while True:
 			try:
 				connfd, addr = self.sockfd.accept()
@@ -48,7 +51,46 @@ class PyTalkServer:
 			client.start()
 
 	def handle(self, connfd):
-		print("handle")
+		while True:
+			data = connfd.recv(1024).decode()
+			if not data or data[0] == 'Q': # 退出
+				connfd.close()
+				return
+			elif data[0] == 'R': # 注册
+				self.do_register(connfd, data)
+			elif data[0] == 'L': # 登录
+				self.do_login(connfd, data)
+			elif data[0] == 'M': # 发送消息
+				self.do_message(connfd, data)
+			elif data[0] == 'A': # 添加好友
+				self.do_addfriend(connfd, data)
+	
+	def do_register(self, connfd, data):
+		print(data)
+		# 判断用户名是否已存在
+		if False:
+			connfd.send("OK".encode())
+		else:
+			connfd.send("用户名已存在".encode())
+	
+	def do_login(self, connfd, data):
+		print(data)
+		# 判断用户名密码是否正确
+		if False:
+			connfd.send("OK".encode())
+		else:
+			connfd.send("密码错误/用户不存在".encode())
+
+	def do_message(self, connfd, data):
+		print(data)
+	
+	def do_addfriend(self, connfd, data):
+		print(data)
+		# 判断用户是否在线
+		if True:
+			connfd.send("OK".encode())
+		else:
+			connfd.send("用户不在线".encode())
 
 
 if __name__ == '__main__':
