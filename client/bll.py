@@ -7,11 +7,11 @@
 
 
 from socket import *
-from select import select
-import os
+from multiprocessing import Process
+import sys
 
 # 服务端地址
-HOST = '0.0.0.0'
+HOST = '127.0.0.1'
 POST = 10000
 ADDR = (HOST, POST)
 
@@ -22,10 +22,12 @@ class Client:
 
 	def create_socket(self):
 		self.sockfd = socket(AF_INET, SOCK_STREAM)
+		print("haha")
 		try:
 			self.sockfd.connect(ADDR)
-		except:
-			sys.exit()
+		except Exception as e:
+			# sys.exit()
+			print(e)
 	
 	def do_register(self, name, passwd): # 已经在ui.py中判断两次密码是否相同了
 		msg = "R " + name + " " + passwd
@@ -33,10 +35,12 @@ class Client:
 		data = self.sockfd.recv(128).decode()
 		if data == "OK":
 			print("register success")
+			return data
 			# 跳转到 do_chat
 			# 返回ok, 图形界面进入登录界面
 		else:
 			print(data)
+			return data
 
 	def do_login(self, name, passwd):
 		msg = "L " + name + " " + passwd
@@ -44,29 +48,19 @@ class Client:
 		data = self.sockfd.recv(128).decode()
 		if data == 'OK':
 			print("login success")
+			return 'OK'
 			# 跳转到 do_chat
 			# 返回ok, 图形界面进入聊天界面
 		else:
 			print(data)
+			return data
 	
 	def do_chat(self, name_send, name_recv, data):
-		# 添加IO多路复用, 接收和发消息
-		# rlist = [self.sockfd]
-		# wlist = []
-		# xlist = []
-		# while True:
-		# 	rs, ws, xs = select(rlist, wlist, xlist)
-		# 	for r in rs:
-		# 		if r is self.sockfd:
-		# 			connfd, addr = r.accept()
-		# 			rlist.append(connfd)
-		# 		else:
-		# 			self.send_msg()
-		# 			rlist.remove(r)
-
-		pid = os.fork()
-		if pid == 0:
-			self.send_msg()
+		# 创建分支进程接收消息
+		p = Process(target=self.recv_msg, args=(self.sockfd,))
+		p.daemon = True
+		p.start()
+		# 主进程发送消息或请求
 
 	def do_addfriend(self, name_send, name_recv):
 		msg = "A " + name_send + " " + name_recv
@@ -78,11 +72,21 @@ class Client:
 			print(data)
 	
 	def send_msg(self, name_send, name_recv, data):
-		msg = "M " + name_send + " " + name_recv + " " + data
-		pass
+		while True:
+			msg = "M " + name_send + " " + name_recv + " " + data
+			self.sockfd.send(msg.encode())
 	
 	def recv_msg(self, name_send, name_recv, data):
-		pass
+		while True:
+			data = self.sockfd.recv(1024).decode()
+			print(data)
+	
+	def get_friends_list(self, name):
+		msg = 'G ' + name
+		self.sockfd.send(msg.encode())
+		data = self.sockfd.recv(1024)
+		return data
+
 
 
 

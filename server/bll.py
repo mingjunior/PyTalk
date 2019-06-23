@@ -6,6 +6,7 @@
 """
 
 import sys
+import signal
 
 from socket import *
 from multiprocessing import Process
@@ -35,6 +36,7 @@ class PyTalkServer:
 		print("Listen the port %d ..." % self.port)
 
 		# 如何处理僵尸进程
+		# signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
 		while True:
 			try:
@@ -47,7 +49,7 @@ class PyTalkServer:
 
 			print("Connect from", addr)
 			client = Process(target=self.handle, args=(connfd,))
-			client.Daemon = True
+			client.daemon = True
 			client.start()
 
 	def handle(self, connfd):
